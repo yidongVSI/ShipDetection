@@ -38,8 +38,6 @@ def rle_decode(mask_rle, shape, pos_val = 255):
     return img.reshape(shape).T
 
 
-
-
 class ShipDataset(Dataset):
   '''A pytroch based Dataset for Kaggle Airbus Ship Detection challenge
   '''

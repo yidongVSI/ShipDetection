@@ -3,3 +3,10 @@
 .o
 .ipynb_checkpoints/
 __pycache__
+
+# Data
+data/
+input/
+
+# Mac
+.DS_Store
