@@ -1,0 +1,3 @@
+[submodule "external/maskRCNN"]
+	path = external/maskRCNN
+	url = git@github.com:yidongVSI/Mask_RCNN.git
