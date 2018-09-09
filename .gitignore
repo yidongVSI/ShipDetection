@@ -10,3 +10,7 @@ input/
 
 # Mac
 .DS_Store
+
+# picture and data
+*.png
+*.hdf5
