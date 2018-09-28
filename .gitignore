@@ -10,7 +10,11 @@ input/
 
 # Mac
 .DS_Store
+._.*
+._*
 
 # picture and data
 *.png
 *.hdf5
+xwu/*.h5
+xwu/*.csv
