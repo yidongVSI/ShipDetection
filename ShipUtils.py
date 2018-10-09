@@ -22,6 +22,26 @@ def PlotShipImages(imgs = [], masks = [], size = 20):
     a[1][i].imshow(masks[i], cmap = 'gray')
   return
 
+def generate_footprint(img_name, bbox = []):
+  '''Generate footprint that fits the FastRCNN training
+  Args:
+    img_names: image name
+    bbox: list of [minx, miny, maxx, maxy] bounding box obtained from annotated mask
+  Return:
+    dictionary of {img_name:string of footprint}
+    string of footprint : 'minx miny maxx miny maxx maxy minx maxy class_name 1' (last '1' is the annotation cofidence)
+  '''
+  out_dict = {}
+  str_box = []
+  print("Inside")
+  for r in bbox:
+    str_out = [str(r[0]), str(r[1]),
+               str(r[2]), str(r[1]),
+               str(r[2]), str(r[3]),
+               str(r[0]), str(r[3]), 'ship', '1']
+    str_box.append(' '.join(str_out))
+  out_dict.update({img_name:str_box})
+  return out_dict
 
 def PlotShipMask(ImageId, masks):
     '''

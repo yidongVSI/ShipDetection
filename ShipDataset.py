@@ -7,6 +7,7 @@ import os
 import glob
 from PIL import Image
 from torch.utils.data import Dataset
+import skimage.measure as skm
 
 # Run-Length Encode and Decode
 # ref.: https://www.kaggle.com/stainsby/fast-tested-rle
@@ -55,6 +56,9 @@ class ShipDataset(Dataset):
     self.df = pd.read_csv(csv_file)
     self.transform = transform
     self.img_files = glob.glob(img_dir + "/*.jpg")
+    self.img_names = []
+    for img_file in self.img_files:
+      self.img_names.append(os.path.basename(img_file))
 
   def __len__(self):
     return len(self.img_files)
@@ -70,12 +74,74 @@ class ShipDataset(Dataset):
     img_file = self.img_files[idx]
     img = np.asarray(Image.open(img_file))
     ser = self.df.loc[self.df['ImageId'] == os.path.basename(img_file)]
-    encode = ser.EncodedPixels.values[0]
-    if pd.isna(encode):
-      mask = np.zeros( (img.shape[0:2]), dtype=img.dtype)
-    else:
-      mask = rle_decode(encode, img.shape[0:2])
+    encode_all = ser.EncodedPixels.values
+    mask_all = []
+    for encode in encode_all:
+      if pd.isna(encode):
+        mask = np.zeros( (img.shape[0:2]), dtype=img.dtype)
+      else:
+        mask = rle_decode(encode, img.shape[0:2])
+      mask_all.append(mask)
+    # add all labels
+    sum_mask = mask_all[0]
+    for i in range(1, len(mask_all)):
+        sum_mask = np.add(sum_mask, mask_all[i])
+    sum_mask[sum_mask > 0] = 255
     if self.transform:
       img = self.transform(img)
-    return img, mask
+    return img, sum_mask
+
+  def get_image(self, img_name):
+    '''Args:
+      img_name (str): some image name
+      Returns:
+        Specified image along with its label mask
+    '''
+    img_file = os.path.join(self.img_dir, img_name)
+    if not os.path.isfile(img_file):
+      return None, None
+    img = np.asarray(Image.open(img_file))
+    ser = self.df.loc[self.df['ImageId'] == os.path.basename(img_file)]
+    encode_all = ser.EncodedPixels.values
+    mask_all = []
+    for encode in encode_all:
+      if pd.isna(encode):
+        mask = np.zeros( (img.shape[0:2]), dtype=img.dtype)
+      else:
+        mask = rle_decode(encode, img.shape[0:2])
+      mask_all.append(mask)
+    # add all labels
+    sum_mask = mask_all[0]
+    for i in range(1, len(mask_all)):
+        sum_mask = np.add(sum_mask, mask_all[i])
+    sum_mask[sum_mask > 0] = 255
+    if self.transform:
+      img = self.transform(img)
+    return img, sum_mask
+
+  def get_footprint(self, img_name):
+    '''Args:
+      img_name (str): some image name
+      Returns:
+        Series of bounding box around each segmented ship
+    '''
+    img_file = os.path.join(self.img_dir, img_name)
+    if not os.path.isfile(img_file):
+      return None, None
+    img = np.asarray(Image.open(img_file))
+    ser = self.df.loc[self.df['ImageId'] == os.path.basename(img_file)]
+    encode_all = ser.EncodedPixels.values
+    footprint_all = []
+    for encode in encode_all:
+      # gen binary mask
+      if pd.isna(encode):
+        continue
+      mask = rle_decode(encode, img.shape[0:2])
+      label_img = skm.label(mask)
+      for region in skm.regionprops(label_img):
+        if region.area > 0:
+          minr, minc, maxr, maxc = region.bbox
+
+          footprint_all.append((minc, minr, maxc, maxr))
+    return img, footprint_all
 
