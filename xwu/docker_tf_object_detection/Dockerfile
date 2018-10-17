@@ -17,7 +17,8 @@ RUN apt-get install -y protobuf-compiler python-pil python-lxml python-tk && \
     pip install contextlib2 && \
     pip install jupyter && \
     pip install matplotlib && \
-    pip install scikit-image
+    pip install scikit-image && \
+    pip install keras
 
 # Install pycocoapi
 RUN git clone --depth 1 https://github.com/cocodataset/cocoapi.git && \
