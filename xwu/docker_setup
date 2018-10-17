@@ -1,11 +1,18 @@
 There are many deep learning ready docker image available on GitHub. The following two are tested and ready to run.
 
 CPU only with Jupyter
-Setup: https://hub.docker.com/r/waleedka/modern-deep-learning/
+Setup:
+https://hub.docker.com/r/waleedka/modern-deep-learning/
 Run:
-docker run -it -p 8888:8888 -p 6006:6006 -v ~/:/host waleedka/modern-deep-learning jupyter notebook --allow-root /host
+docker run -it -p 8888:8888 -p 6006:6006 -v ~/:/host waleedka/modern-deep-learning jupyter notebook --ip=0.0.0.0 --allow-root /host
 
 GPU with Jupyter
-Setup: https://github.com/ufoym/deepo#Jupyter
+Setup:
+https://github.com/ufoym/deepo#Jupyter
 Run:
 nvidia-docker run -it -p 8888:8888 -v ~/:/host --ipc=host ufoym/deepo:all-py36-jupyter jupyter notebook --no-browser --ip=0.0.0.0 --allow-root /host --NotebookApp.token= --notebook-dir='/root'
+
+Build my own
+cd to the folder that contains the Dockerfile
+docker build -t tf-object-detection .
+docker run -it -p 8888:8888 -p 6006:6006 -v ~/:/host tf-object-detection jupyter notebook --ip=0.0.0.0 --allow-root /host
